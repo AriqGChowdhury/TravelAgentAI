@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Index</title>
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+</head>
+<body>
+    {% extends 'base.html' %}
+    {% block content %}
+    <div class="welcomeTitle">
+        <h2>Shadow's Travel Agency (AI)</h2>
+        
+        <h3>Welcome!</h3>
+    </div>
+
+    <div class="about">
+        <p>Get flight info, hotel pricing, and activities in any city you choose.</p>
+    </div>
+
+    <div class="textSpace">
+        <div class="chatBox">
+            <div class="assistant1">
+                {{intro}}
+            </div>
+        </div>
+        <!-- <div class="buttonOptions"></div> -->
+        
+        <form id="travel_agent" autocomplete="off">
+            <label for="user_input"></label>
+            <input type="text" id="user_input" name="user_input" required autofocus>
+            <button type="submit">Send</button>
+        </form>
+
+        <div class="buttonOptions"></div>
+        <div class="roomOptions"></div>
+        <div id="chatBoxFlight">
+            <div id="assistantFlight"></div>
+            <div id="user_inputFlight"></div>
+        </div>
+        <div class="buttonOptions2"></div>
+        <div id="chatBoxAct"></div>
+        
+    </div>
+
+    <script>
+        const socket = io();  
+        let state = "get_region";
+        let hotel_questions = "";
+        let flight_questions = "";
+        let hasBeenCalled = false;
+        let hotelInfo = "";
+        let roomInfo = "";
+        let flightInfo = "";
+        let linksToPicsList = [];
+        let userinputGlobal = "";
+        let itinerary = []
+
+        function chooseHotel(buttonText, currentID) {
+            console.log("in choose hotel");
+            if (hasBeenCalled == false) {
+                console.log("button text: " + buttonText.textContent);
+                console.log("currentid: " + currentID);
+                hasBeenCalled = true;
+            }
+            itinerary.push(buttonText);
+            hotelInfo = buttonText.textContent;
+            clearHotel = document.querySelector('.buttonOptions').innerHTML = "";
+            socket.emit('choose_room', {data: currentID, hotel_info: buttonText.textContent});
+
+        }
+
+        function chooseFlight(button) {
+            console.log("in choose flight function");
+            console.log(button.textContent);
+            itinerary.push(button.textContent);
+            flightInfo = button.textContent;
+            const chatBox = document.querySelector('.buttonOptions2');
+            chatBox.innerHTML = '';
+            cont_flight_conv(user_input, flightInfo);
+        }
+
+        
+        
+        document.getElementById('travel_agent').addEventListener('submit', function(e) {
+            e.preventDefault();  
+            
+            window.scrollTo(0, document.body.scrollHeight);
+            const user_input = document.getElementById('user_input').value;
+            const chatBox = document.getElementById('travel_agent');
+            const chatBoxFlight = document.getElementById('chatBoxFlight');
+            const user_input2 = document.getElementById('user_input').value;
+            
+
+            if (state == 'get_region') {
+                get_region(user_input, chatBox);
+            }
+            else if (state == "hotel_question2") { 
+                hotelQ2(user_input, chatBox);
+            }
+            else if (state == "hotel_question3") {
+                hotelQ3(user_input, chatBox);
+            }
+            else if (state == "hotel_question4") {
+                hotelQ4(user_input, chatBox);
+            }
+            else if (state == "hotel_question5") {
+                hotelQ5(user_input, chatBox);
+            }
+            else if (state == "doneQ") {
+                doneQ(user_input, chatBox);
+            }
+            else if (state == "flights") {
+                flights(userinputGlobal, hotelInfo, roomInfo);
+            }
+            else if (state == "flightQ1") {
+                console.log("now executing flight q1");
+                flightQ1(user_input, chatBox);
+            }
+            else if (state == "flightQ2") {
+                flightQ2(user_input, chatBox);
+            }
+            else if (state == "flightQ3") {
+                flightQ3(user_input, chatBox);
+            }
+            else if (state == "activities_conv") {
+                activities_conv(user_input);
+            }
+
+            
+        });
+
+        function get_region(user_input, chatBox) {
+            document.getElementById('user_input').value = '';
+                socket.emit('get_region', { data: user_input })
+                
+                socket.on('region_received',(data) => {
+                    chatBox.innerHTML += `<div class="user_input"><p> ${user_input}</p></div>`;
+                    chatBox.innerHTML += `<div class="assistant"><p>When will you be checking in and checking out? (required) </p></div>`;
+                    document.getElementById('user_input').focus();
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                    state = "hotel_question2";
+                });
+        }
+        function hotelQ2(user_input, chatBox) {
+            const checkinOut = document.getElementById('user_input').value;
+            chatBox.innerHTML += `<div class="user_input"><p> ${checkinOut}</p></div>`;
+            chatBox.innerHTML += `<div class="assistant"><p>How many adults? (required) </p></div>`;
+            document.getElementById('user_input').focus();
+            hotel_questions += " 1." + checkinOut;
+            state = "hotel_question3";
+        }
+        function hotelQ3(user_input, chatBox) {
+            const adults = document.getElementById('user_input').value;
+            chatBox.innerHTML += `<div class="user_input"><p> ${adults}</p></div>`;
+            chatBox.innerHTML += `<div class="assistant"><p>What is your max budget per night for the hotel? </p></div>`;
+            document.getElementById('user_input').focus();
+            hotel_questions += " 2." + adults;
+            state = "hotel_question4";
+        }
+        function hotelQ4(user_input, chatBox) {
+            const maxBudget = document.getElementById('user_input').value;
+            chatBox.innerHTML += `<div class="user_input"><p> ${maxBudget}</p></div>`;
+            chatBox.innerHTML += `<div class="assistant"><p>Are you looking for certain amenities? You can choose things like wifi, gym, pool, etc </p></div>`;
+            document.getElementById('user_input').focus();
+            hotel_questions += " 3." + maxBudget;
+            state = "hotel_question5";
+        }
+        function hotelQ5(user_input, chatBox) {
+            window.scrollTo(0, document.body.scrollHeight);
+            const amenities = document.getElementById('user_input').value;
+            
+            chatBox.innerHTML += `<div class="user_input"><p> ${amenities}</p></div>`;
+            chatBox.innerHTML += `<div class="assistant"><p>How would you like to sort the results? (Distance, Review, Price low to high, Recommended, Price relevant, or Property class) </p></div>`;
+            window.scrollTo(0, document.body.scrollHeight);
+            document.getElementById('user_input').focus();
+            hotel_questions += " 4." + amenities;
+            
+            state = "doneQ";
+        }
+        function doneQ(user_input, chatBox) {
+            const sort = document.getElementById('user_input').value;
+                
+            hotel_questions += " 5." + sort; 
+            chatBox.innerHTML += `<div class="user_input"><p> ${sort}</p></div>`;
+            socket.emit('get_hotels', { hotel_questions});
+            
+            document.getElementById('user_input').readOnly = true;
+        }
+        function flights(user_input4, hotelInfo, roomInfo) {
+            const input4 = document.getElementById('user_input').value;
+            chatBox.innerHTML += `<div class="user_input"><p> ${input4}</p></div>`;
+            console.log("user input4: " + input4);
+            socket.emit('hotel_conv', {data: input4, hotel_info: hotelInfo, room_info: roomInfo});
+            document.getElementById('user_input').value = '';
+            document.getElementById('user_input').readOnly = true;
+            socket.once('hotel_done',(data) => {
+                console.log("inside hotel done in index");
+                document.getElementById('user_input').readOnly = false;
+                chatBox.innerHTML += `<div class="assistantFlight"><p>Where are you traveling from? (City and State)</p></div>`;
+                const input4 = document.getElementById('user_input').value;
+                document.getElementById('user_input').value = '';
+                document.getElementById('user_input').focus();
+                window.scrollTo(0, document.body.scrollHeight);
+                chatBox.scrollTop = chatBox.scrollHeight;
+                state = "flightQ1";
+                console.log(state);
+            });
+        }
+
+        function activities_conv () {
+            socket.emit('activities_conv', {data: "", firstTime: true});
+        }
+
+        function cont_flight_conv (user_input, flightInfo) {
+            console.log("inside cont flight convo");
+            const chatBox = document.getElementById('chatBoxAct');
+            chatBox.innerHTML += `<div class="assistantAct" style="display: block;
+                word-wrap: break-word;
+                text-align: left;
+                width: 90%;
+                margin-bottom: 10px;">If you have any questions about the flight feel free to ask or say next to move onto activities</div>`;
+            let userInputField = document.getElementById('user_input');
+            userInputField.value = '';
+            userInputField.readOnly = false;
+            userInputField.focus();
+            
+            userInputField.addEventListener('keypress', function (e) {
+                console.log("keypress worked");
+                if (e.key === "Enter") {
+                    console.log("in if statement");
+                    let userInputValue = userInputField.value;
+                    if (userInputValue !== "") {
+                        console.log("user input captured");
+                        chatBox.innerHTML += `<div class="user_inputAct" style="display: block;
+                            word-wrap: break-word;
+                            margin-bottom: 10px;
+                            margin-left: 60%;
+                            border-radius: 10px;
+                            width: 35%;
+                            padding: 15px;
+                            color: white;
+                            text-align: center;
+                            background-color: #012449;"><p> ${userInputValue}</p></div>`;
+                        console.log("flight info: " + flightInfo);
+                        socket.emit('cont_flight_convo', {data: userInputValue, flight_info: flightInfo, firstTime: true});
+                        userInputField.readOnly = true;
+                        userInputField.value = '';
+                        document.getElementById('chatBoxAct').dispatchEvent(new Event('submit'));
+                    }
+                }
+            });
+            
+            socket.once('flight_done',(data) => {
+                console.log('inside flight done');
+                activities_conv();
+            });
+        
+        }
+        function flightQ3 (user_input, chatBox) {
+            const children = document.getElementById('user_input').value;            
+            flight_questions += " 3." + children;
+            console.log("flight q: " + flight_questions);
+            chatBoxFlight.innerHTML += `<div class="user_inputFlight" style=
+                "display: block;
+                word-wrap: break-word;
+                margin-bottom: 10px;
+                margin-left: 60%;
+                border-radius: 10px;
+                width: 35%;
+                padding: 15px;
+                color: white;
+                text-align: center;
+                background-color: #012449;"><p> ${children}</p></div>`;
+            document.getElementById('user_input').value = '';
+            socket.emit('get_flights', { flight_questions});
+            window.scrollTo(0, document.body.scrollHeight);
+
+            document.getElementById('user_input').readOnly = true;
+            
+        }
+        function flightQ2 (user_input, chatBox) {
+            const flyClass = document.getElementById('user_input').value;            
+            chatBoxFlight.innerHTML += `<div class="user_inputFlight" style="display: block;
+                word-wrap: break-word;
+                margin-bottom: 10px;
+                margin-left: 60%;
+                border-radius: 10px;
+                width: 35%;
+                padding: 15px;
+                color: white;
+                text-align: center;
+                background-color: #012449;"><p> ${flyClass}</p></div>`;
+            chatBoxFlight.innerHTML += `<div class="assistantFlight" style=" display: block;
+                word-wrap: break-word;
+                text-align: left;
+                width: 90%;
+                margin-bottom: 10px;"><p>Are you bringing any children? If so, how many? </p></div>`;
+            window.scrollTo(0, document.body.scrollHeight);
+
+            document.getElementById('user_input').focus();
+            flight_questions += " 2." + flyClass;
+            document.getElementById('user_input').value = '';
+            state = "flightQ3";
+        }
+        function flightQ1(user_input, chatBox) {
+            console.log("inside flightq1 inside index");
+            document.getElementById('user_input').readOnly = false; 
+            const fromCity = document.getElementById('user_input').value;           
+            chatBoxFlight.innerHTML += `<div class="user_inputFlight" style="display: block;
+                word-wrap: break-word;
+                margin-bottom: 10px;
+                margin-left: 60%;
+                border-radius: 10px;
+                width: 35%;
+                padding: 15px;
+                color: white;
+                text-align: center;
+                background-color: #012449;"><p> ${fromCity}</p></div>`;
+            chatBoxFlight.innerHTML += `<div class="assistantFlight" style=" display: block;
+                word-wrap: break-word;
+                text-align: left;
+                width: 90%;
+                margin-bottom: 10px;"><p>Would you like to fly economy, premium_economy, business or first class? </p></div>`;
+            window.scrollTo(0, document.body.scrollHeight);
+
+            console.log(fromCity);
+            
+            console.log("passed chatbox");
+            document.getElementById('user_input').focus();
+            flight_questions += " 1." + fromCity;
+            document.getElementById('user_input').value = '';
+            state = "flightQ2";
+        }
+
+        function linkToPics(button) {
+            itinerary.push(button.textContent);
+            chatBox = document.querySelector('.roomOptions');
+            encodedLinks = encodeURIComponent(JSON.stringify(linksToPicsList));
+            chatBox.innerHTML = '';
+            chatBox.innerHTML += `<br><a href='/static/picturesOfRooms.html?links=${encodedLinks}' style="text-decoration:none;"> Link to pictures of room </a>`;
+            chatBox.innerHTML += `<div class="assistantFlight" style=" display: block;
+                word-wrap: break-word;
+                text-align: left;
+                width: 90%;
+                margin-bottom: 10px;">If you have any questions about the hotel or room feel free to ask! or say next to move onto flights</div>`;
+            state = "flights";
+            roomInfo = button.textContent;
+            let userInputField = document.getElementById('user_input');
+            userInputField.value = '';
+            userInputField.readOnly = false;
+            userInputField.focus();
+            
+            userInputField.addEventListener('keypress', function (e) {
+                if (e.key === "Enter") {
+                    let userInputValue = userInputField.value;
+                    if (userInputValue !== "") {
+                        userinputGlobal = userInputValue;
+                        console.log("userinputglobal: " + userinputGlobal);
+                        userInputField.value = '';
+                        document.getElementById('travel_agent').dispatchEvent(new Event('submit'));
+                    }
+                }
+            }, { once: true });
+            
+        }
+
+        socket.on('hotel_summary', function(message) {
+            const chatBox = document.querySelector('.buttonOptions');
+            let newContent = "";
+            for (i=0; i<message.lengthh; i++) {
+                console.log(message.response[i]['hotel_name']);
+                newContent += `<button id="hotelButtons" onclick="chooseHotel(this,${message.response[i]['hotel_id']})" type="button" class="hotelOptions">
+                    ${message.response[i]['hotel_name']}<br>Rating: ${message.response[i]['rating']['ratingText']}<br>Price per night: ${message.response[i]['price_per_night']['formatted']}<br>Location: ${message.response[i]['location'][0]}
+                    </button>`;
+            }
+            chatBox.innerHTML += "<p>Choose a hotel</p><br>";
+            chatBox.innerHTML += newContent;
+            window.scrollTo(0, document.body.scrollHeight);
+        });
+
+        socket.on('room_summary', function(message) {
+            const chatBox = document.querySelector('.roomOptions');
+            let newContent = "";
+            linksToPicsList = [];
+            
+            for (i=0; i<message.length_of_pics; i++){
+                linksToPicsList.push(message.response['propertyUnit']['gallery'][i]['url']);
+            }
+            
+            chatBox.innerHTML = "<p>Choose a room</p><br>";
+            newContent += `<button onclick="linkToPics(this)" type="button" class="roomOptions">
+                     ${message.response['header']['name']}<br>${message.response['propertyUnit']['description']}<br>${message.response['propertyUnit']['ratePlans'][0]['priceDetails'][0]['cancellationPolicy']['type']}<br>Total: ${message.response['propertyUnit']['ratePlans'][0]['priceDetails'][0]['price']['total']['amount']}
+                </button>`;
+            
+            chatBox.innerHTML += newContent;
+            window.scrollTo(0, document.body.scrollHeight);
+        });
+
+        socket.on('flight_summary', function(message) {
+            const chatBox = document.querySelector('.buttonOptions2');
+            let newContent = "";
+            for (i=0; i<message.lengthh; i++) {
+                console.log(message.response[i]['hotel_name']);
+                newContent += `<button id="flightButtons" onclick="chooseFlight(this)" type="button" class="flightOptions">
+                    ${message.response[i]['origin_airline_name']}<br>
+                    Departure: ${message.response[i]['departure_from_origin_airport']} From ${message.response[i]['origin_airport_name']}<br>
+                    Arrival: ${message.response[i]['arrival_to_dest']} To ${message.response[i]['destination_airport_name']}<br>
+                    Price: $${message.response[i]['price_per_ticket']}<br><br>
+
+                    ${message.response[i]['airline_name_endOfTrip']}<br>
+                    Departure: ${message.response[i]['departure_from_origin_endOfTrip']}<br>
+                    Arrival: ${message.response[i]['arrival_to_dest_endOfTrip']}<br><br>
+                    
+                    </button>`;
+            }
+            state = "cont_flight_conv";
+            chatBox.innerHTML += "<p>Choose a flight</p><br>";
+            chatBox.innerHTML += newContent;
+            window.scrollTo(0, document.body.scrollHeight);
+        });
+
+        socket.on('act_response', function(message) {
+            const chatBox = document.getElementById('chatBoxAct');
+            chatBox.innerHTML += `<div class="assistantAct" style=" display: block;
+                word-wrap: break-word;
+                text-align: left;
+                width: 90%;
+                margin-bottom: 10px;"><p> ${message.response}</p></div>`;
+            console.log("inside act_response" + message);
+            document.getElementById('user_input').readOnly = false;
+            
+            let userInputField = document.getElementById('user_input');
+            userInputField.value = '';
+            userInputField.readOnly = false;
+            userInputField.focus();
+            if (message.socket_name && message.socket_name == "activities_conv") {
+                userInputField.addEventListener('keypress', function (e) {
+                console.log("keypress worked");
+                if (e.key === "Enter") {
+                    console.log("in if statement act_response");
+                    let userInputValue = userInputField.value;
+                    if (userInputValue !== "") {
+                        console.log("user input captured act_response if statement");
+                        chatBox.innerHTML += `<div class="user_inputAct" style="display: block;
+                            word-wrap: break-word;
+                            margin-bottom: 10px;
+                            margin-left: 60%;
+                            border-radius: 10px;
+                            width: 35%;
+                            padding: 15px;
+                            color: white;
+                            text-align: center;
+                            background-color: #012449;"><p> ${userInputValue}</p></div>`;
+                        socket.emit('activities_conv', {data: userInputValue, firstTime: false});
+                        userInputField.readOnly = true;
+                        userInputField.value = '';
+                        document.getElementById('chatBoxAct').dispatchEvent(new Event('submit'));
+                    }
+                }
+            });
+            }
+
+                
+            
+            window.scrollTo(0, document.body.scrollHeight);
+            
+        });
+
+        socket.on('assistant_response', function(message) {
+            
+            const chatBox = document.getElementById('travel_agent');
+            chatBox.innerHTML += `<div class="assistant"><p> ${message.response}</p></div>`;
+            window.scrollTo(0, document.body.scrollHeight);
+            document.getElementById('user_input').readOnly = false;
+        });
+
+        socket.on('assistant_response2', function(message) {
+            const chatBox = document.getElementById('chatBoxAct');
+            chatBox.innerHTML += `<div class="assistantAct"><p> ${message.response}</p></div>`;
+            console.log(message);
+            const input = document.getElementById('user_input').value;
+            if (message.socket_name && message.socket_name == "hotel_conv") {
+                let userInputField = document.getElementById('user_input');
+                userInputField.value = '';
+                userInputField.readOnly = false;
+                userInputField.focus();
+                userInputField.addEventListener('keypress', function (e) {
+                    console.log("keypress worked");
+                    if (e.key === "Enter") {
+                        let userInputValue = userInputField.value;
+                        if (userInputValue !== "") {
+                            console.log("user input captured act_response if statement");
+                            chatBox.innerHTML += `<div class="user_inputAct" style="display: block;
+                                word-wrap: break-word;
+                                margin-bottom: 10px;
+                                margin-left: 60%;
+                                border-radius: 10px;
+                                width: 35%;
+                                padding: 15px;
+                                color: white;
+                                text-align: center;
+                                background-color: #012449;"><p> ${userInputValue}</p></div>`;
+                            socket.emit('hotel_conv', {data: userInputValue, firstTime: false, hotel_info:hotelInfo});
+                            userInputField.readOnly = true;
+                            userInputField.value = '';
+                            document.getElementById('chatBox').dispatchEvent(new Event('submit'));
+                        }
+                    }
+                });
+            }
+            if (message.socket_name && message.socket_name == "cont_flight_convo") {
+                let userInputField = document.getElementById('user_input');
+                userInputField.value = '';
+                userInputField.readOnly = false;
+                userInputField.focus();
+                userInputField.addEventListener('keypress', function (e) {
+                    console.log("keypress worked");
+                    if (e.key === "Enter") {
+                        let userInputValue = userInputField.value;
+                        if (userInputValue !== "") {
+                            console.log("user input captured act_response if statement");
+                            chatBox.innerHTML += `<div class="user_inputAct" style="display: block;
+                                word-wrap: break-word;
+                                margin-bottom: 10px;
+                                margin-left: 60%;
+                                border-radius: 10px;
+                                width: 35%;
+                                padding: 15px;
+                                color: white;
+                                text-align: center;
+                                background-color: #012449;"><p> ${userInputValue}</p></div>`;
+                            socket.emit('cont_flight_convo', {data: userInputValue, firstTime: false, flight_info: flightInfo});
+                            userInputField.readOnly = true;
+                            userInputField.value = '';
+                            document.getElementById('chatBoxAct').dispatchEvent(new Event('submit'));
+                        }
+                    }
+                });
+            }
+            window.scrollTo(0, document.body.scrollHeight);
+            document.getElementById('user_input').readOnly = false;
+        });
+        
+    </script>
+    
+    {% endblock %}
+    
+</body>
+</html>

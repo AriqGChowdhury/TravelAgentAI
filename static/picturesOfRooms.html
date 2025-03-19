@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    
+    <div id="imageContainer"></div>
+    
+</body>
+<script>
+    const params = new URLSearchParams(window.location.search);
+    const links = params.get("links");
+    
+
+    
+    console.log("links: " + links);
+    const linkBox = document.getElementById('imageContainer');
+    
+    let full_link = '';
+    for (let i=0; i<links.length; i++) {
+        
+        links[i] = String(links[i]);
+        if (links[i] != ']' && links[i] != '[' && links[i] != ',') {
+            full_link += links[i];
+        }
+        else if (links[i] == ",") {
+            linkBox.innerHTML += `<img src=${full_link}>`;
+            full_link = '';
+            linkBox.innerHTML += "<br><br>";
+        }
+        
+        
+    }
+        
+    
+</script>
+</html>

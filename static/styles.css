@@ -1,0 +1,228 @@
+.welcomeTitle h2 {
+    font-family: "Jersey 15", serif;
+    font-weight: 400;
+    font-style: normal;
+    text-align: center;
+    font-size: 300%;
+    margin-left: -2%;
+
+}
+
+.welcomeTitle h3 {
+    font-size: 200%;
+}
+
+html {
+    overflow-y: auto;
+}
+
+body {
+    background-color: #001d3d;
+    margin-left: 2%;
+    color: white;
+    font-family: "Roboto Mono", serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+    padding-bottom: 100px;
+}
+
+.about {
+    font-size: 120%;
+}
+
+.textSpace {
+    display: block;
+}
+
+#travel_agent button {
+    position: fixed;
+    height: 28px;
+    text-align: center;
+    border-radius: 3px;
+    border: 2px solid #E8E8E8;
+    color: white;
+    background-color: #012449;
+    margin-left: 60%;
+    bottom: 10px;
+    display: none;
+}
+
+
+#travel_agent {
+    margin-left: 30%;
+}
+
+.textSpace input {
+    position: fixed; 
+    bottom: 10px;
+    width: 400px;
+    line-height: 200%;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.user_input {
+    display: block;
+    word-wrap: break-word;
+    margin-bottom: 10px;
+    margin-left: 60%;
+    border-radius: 10px;
+    width: 35%;
+    padding: 15px;
+    color: white;
+    text-align: center;
+    background-color: #012449;
+}
+
+.user_inputFlight {
+    display: block;
+    word-wrap: break-word;
+    margin-bottom: 10px;
+    margin-left: 60%;
+    border-radius: 10px;
+    width: 35%;
+    padding: 15px;
+    color: white;
+    text-align: center;
+    background-color: #012449;
+}
+
+.user_inputAct {
+    display: block;
+    word-wrap: break-word;
+    margin-bottom: 10px;
+    margin-left: 60%;
+    border-radius: 10px;
+    width: 35%;
+    padding: 15px;
+    color: white;
+    text-align: center;
+    background-color: #012449;
+}
+
+
+.assistant {
+    display: block;
+    word-wrap: break-word;
+    margin-left: -43%;
+    text-align: left;
+    width: 90%;
+    margin-bottom: 10px;
+}
+
+#assistantFlight {
+    display: block;
+    word-wrap: break-word;
+    /* margin-left: -43%; */
+    text-align: left;
+    width: 90%;
+    margin-bottom: 10px;
+}
+.assistantFlight {
+    display: block;
+    word-wrap: break-word;
+    /* margin-left: -43%; */
+    text-align: left;
+    width: 90%;
+    margin-bottom: 10px;
+}
+
+.assistantAct {
+    display: block;
+    word-wrap: break-word;
+    /* margin-left: -43%; */
+    text-align: left;
+    width: 90%;
+    margin-bottom: 10px;
+}
+.assistant1 {
+    display: block;
+    word-wrap: break-word;
+    left: 20px;
+    text-align: left;
+    margin-bottom: 10px;
+    max-width: 60%;
+    
+}
+
+
+button.hotelOptions {
+    display: inline-block;
+    padding: 10px;
+    margin: 5px;
+    color: #012449;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+button.hotelOptions:hover {
+    color: white;
+    background-color: #012449;
+}
+
+button.flightOptions {
+    display: inline-block;
+    padding: 10px;
+    margin: 5px;
+    color: #012449;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+button.flightOptions:hover {
+    color: white;
+    background-color: #012449;
+}
+
+.buttonOptions2 {
+    width: 90%;
+}
+
+
+.buttonOptions {
+    width: 90%;
+}
+
+button.roomOptions {
+    display: inline-block;
+    padding: 10px;
+    margin: 5px;
+    color: #012449;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+button.roomOptions:hover {
+    color: white;
+    background-color: #012449;
+}
+
+.user_inputFlight {
+    display: block;
+    word-wrap: break-word;
+    margin-bottom: 10px;
+    margin-left: 60%;
+    border-radius: 10px;
+    width: 35%;
+    padding: 15px;
+    color: white;
+    text-align: center;
+    background-color: #012449;
+}
+
+.user_inputAct {
+    display: block;
+    word-wrap: break-word;
+    margin-bottom: 10px;
+    margin-left: 60%;
+    border-radius: 10px;
+    width: 35%;
+    padding: 15px;
+    color: white;
+    text-align: center;
+    background-color: #012449;
+}
