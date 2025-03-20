@@ -1,0 +1,13 @@
+Flask==2.3.2
+Flask_SocketIO==5.5.1
+python-dotenv==0.21.0  
+requests_kerberos==0.15.0
+torch_npu==2.4.0.post2
+torchao==0.9.0
+torcharrow==0.1.0
+torchaudio==2.6.0+cu118
+torchdata==0.11.0
+torchrec==1.1.0
+torchvision==0.21.0+cu118
+transformers==4.28.0  
+xformers==0.0.29.post3
