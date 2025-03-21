@@ -44,6 +44,12 @@ flask run
 
 Contact me at ariq922@hotmail.com
 
+## Demo
+
+Available at https://ariqgchowdhury.github.io/portfolio
+
+or Direct link: https://drive.google.com/file/d/1Q1miXkiI3PQdOUbR8WSvH0D_Er--3nTk/view?usp=sharing
+
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
